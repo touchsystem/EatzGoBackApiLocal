@@ -1,0 +1,112 @@
+--APILOCAL--
+
+CADASTRO DE USUARIOS
+NIVEL_ACESSO
+CLIENTE
+PRODUTO
+GRUPO 
+
+--A FAZER
+
+CX_RECEB -->SYNC somente envio para nuvens
+   CX_RECEB_TIPO -->SYNC somente envio para Nuvens
+   VENEXT --> SYNC somente envio para nuvens
+TIPO_REC --CRUD
+EMPRESA -- CRUD
+PARAMETROS --CRUD
+IMPRESSORAS --CRUD
+MESAS_CARTOES -- CRUD
+
+
+
+
+TELAS
+  Caixa 
+  Venda
+  Venda Direta
+  Delivery
+
+
+
+
+
+
+
+
+
+TIPO_REC
+-rotas locais
+ 
+ CADASTRO DE IMPRESSORAS 
+ 
+
+RECEBIMENTOS -CX_RECEB/CX_RECEB_TIPO
+-rotals locais
+-sync local-->nuvem  somente envia
+
+VENDA
+-rotas locais
+
+VENEXT
+-rotas locais
+-sync local-->nuvem 
+
+
+CADASTRO DE MESAS
+-sync biredicional
+-rotas nuvens
+-rotas local
+
+
+PARAMETROS
+- crud somente em baixo
+
+
+
+
+
+CREATE TABLE CX_RECEB (
+    ID           INT  AUTO_INCREMENT PRIMARY KEY,  -- Chave primária com auto incremento
+    ID_HOSTWEB   int DEFAULT 0,
+    STATUS       VARCHAR(1) DEFAULT "L", 
+    DATA         DATE,
+    ID_CLI       INT   DEFAULT 0, 
+    ID_USER      INT   DEFAULT 0,   
+    TOTAL        FLOAT DEFAULT 0,
+    TROCO        FLOAT DEFAULT 0,
+    -------VER PARA REMOVER
+    MP_REALBR    FLOAT DEFAULT 0,
+    ME_REALBR    FLOAT DEFAULT 0,
+    MP_GUARANIPY FLOAT DEFAULT 0,
+    ME_GUARANIPY FLOAT DEFAULT 0,
+    MP_PESOAR    FLOAT DEFAULT 0,
+    ME_PESOAR    FLOAT DEFAULT 0,
+    MP_DOLARUS   FLOAT DEFAULT 0,
+    ME_DOLARUS   FLOAT DEFAULT 0,
+    MP_EUROEU    FLOAT DEFAULT 0,
+    ME_EUROEU    FLOAT DEFAULT 0,
+    PIX          FLOAT DEFAULT 0,
+    QRCODE       FLOAT DEFAULT 0,
+    CARTAO_CRED1 FLOAT DEFAULT 0,
+    CARTAO_CRED2 FLOAT DEFAULT 0,
+    CARTAO_CRED3 FLOAT DEFAULT 0,
+    CARTAO_CRED4 FLOAT DEFAULT 0,
+    CARTAO_CRED5 FLOAT DEFAULT 0,
+    CARTAO_DEB1  FLOAT DEFAULT 0,
+    CARTAO_DEB2  FLOAT DEFAULT 0,
+    CARTAO_DEB3  FLOAT DEFAULT 0,
+    CARTAO_DEB4  FLOAT DEFAULT 0,
+    CARTAO_DEB5  FLOAT DEFAULT 0,
+    MAQ3_01      FLOAT DEFAULT 0, 
+    MAQ3_02      FLOAT DEFAULT 0, 
+    MAQ3_03      FLOAT DEFAULT 0, 
+    OUTRO1       FLOAT DEFAULT 0, 
+    OUTRO2       FLOAT DEFAULT 0, 
+    OUTRO3       FLOAT DEFAULT 0, 
+    DESCONTO     FLOAT DEFAULT 0, 
+    BONIFICACAO  FLOAT DEFAULT 0,
+    ---ATÉ AQUI
+    MESA         INT DEFAULT 0,
+    NR_PESSOAS   INT DEFAULT 0,
+    CRIADOEM   TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Campo criadoEm adicionado
+) ENGINE=INNODB;
