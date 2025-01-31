@@ -251,12 +251,13 @@ CREATE TABLE TIPO_REC(
 
 
      INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Real BR ',   1, '*' );  
-     INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Dolar US ',   5.8, '/' );  
-     INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Guarani PY ',  1750, '*' );  
-     INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Peso ARG ',   140, '*' );  
-     INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Euro ',   5.8, '/' );  
+     INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Dolar US ',   5.8, '*' );  
+     INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Guarani PY ',  1750, '/' );  
+     INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Peso ARG ',   140, '/' );  
+     INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Euro ',   5.8, '*' );  
      INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Cartão de Credito ',   0, '' );  
      INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Cartão de Debito ',   0, '' );  
+     INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Vale Refeição ',   0, '' );  
      INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Pix ',   0, '' );  
      INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'QR COD PY ',   0, '' );  
      INSERT INTO TIPO_REC (NOME, CAMBIO, FT_CONV) VALUES (   'Desconto',   0, '' );  
@@ -332,8 +333,8 @@ CREATE TABLE VENDA (
     `CPF_CLIENTE`     VARCHAR(30) DEFAULT "",
     `NOME_CLIENTE`    VARCHAR(30) DEFAULT "",
     `ID_CLIENTE`      int DEFAULT 0,
-
     `PV`              float DEFAULT 0,
+    `DESCONTO`        float DEFAULT 0,
     `PV_PROM`         float DEFAULT 0,
     `QTD`             float DEFAULT 0,
     `ID_USER`         INT DEFAULT 0,

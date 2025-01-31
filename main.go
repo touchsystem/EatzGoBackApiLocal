@@ -45,7 +45,7 @@ func main() {
 	}
 
 	//fmt.Printf("2.4.1227  - API LOCAL Escutando na porta %d\n  -  ", config.Porta, cdEmp)
-	fmt.Printf("2.5.0129a - API LOCAL Escutando na porta %d\n - Empresa: %s\n", config.Porta, cdEmp)
+	fmt.Printf("2.5.0131 - API LOCAL Escutando na porta %d\n - Empresa: %s\n", config.Porta, cdEmp)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", config.Porta), handler))
 }
