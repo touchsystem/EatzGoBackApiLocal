@@ -57,7 +57,7 @@ func (repositorio Produtos) CriarProdutos(produto modelos.Produto) (uint64, erro
 	// Sincroniza com a nuvem e captura o ID gerado na nuvem
 	idHostWeb, erro := utils.SincronizarProdutoNuvem(produto)
 	if erro != nil {
-		log.Printf("Erro ao sincronizar com a nuvem: %v", erro)
+		log.Printf("Erro... ao sincronizar com a nuvem: %v", erro)
 		return uint64(ultimoIDInserido), nil
 	}
 

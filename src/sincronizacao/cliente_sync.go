@@ -72,7 +72,7 @@ func sincronizarClientesPendentes() {
 
 		idNuvem, erro := enviarClienteParaNuvem(cliente, tokenSync)
 		if erro != nil {
-			log.Println("Erro ao sincronizar cliente com a nuvem:", erro)
+			log.Println("Erro.... ao sincronizar cliente com a nuvem:", erro)
 			continue
 		}
 

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -63,10 +64,10 @@ func sincronizarUsuariosPendentes() {
 			repositorio.AtualizarUsuarioPorHostWeb(usuario.ID, usuario)
 			continue
 		}
-
+		//fmt.Println("teste", usuario, tokenSync)
 		idNuvem, erro := enviarUsuarioParaNuvem(usuario, tokenSync)
 		if erro != nil {
-			log.Println("Erro ao sincronizar usuário com a nuvem:", erro)
+			log.Println("Erro. . ao sincronizar usuário com a nuvem:", erro)
 			continue
 		}
 
@@ -84,14 +85,16 @@ func enviarUsuarioParaNuvem(usuario modelos.Usuario, token string) (uint64, erro
 	url := fmt.Sprintf("http://%s:5000/usuario-sync", ipNuvem)
 
 	corpoJSON, _ := json.Marshal(usuario)
+	//fmt.Println("📤 JSON Enviado:", string(corpoJSON)) // <-- ADICIONADO
+
 	request, erro := http.NewRequest("POST", url, bytes.NewBuffer(corpoJSON))
 	if erro != nil {
 		return 0, erro
 	}
-	//fmt.Println(usuario)
+
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Authorization", "Bearer "+token)
-	//fmt.Printf("%+v\n", usuario)
+
 	client := &http.Client{}
 	response, erro := client.Do(request)
 	if erro != nil {
@@ -99,12 +102,17 @@ func enviarUsuarioParaNuvem(usuario modelos.Usuario, token string) (uint64, erro
 	}
 	defer response.Body.Close()
 
+	//fmt.Println("🔄 Status da resposta da nuvem:", response.StatusCode) // <-- ADICIONADO
+
 	if response.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(response.Body) // Lê a resposta da API para entender o erro
+		fmt.Println("❌ Erro ao sincronizar usuário, resposta:", string(body))
 		return 0, fmt.Errorf("erro ao sincronizar usuário com a nuvem: status %d", response.StatusCode)
 	}
 
 	var resultado map[string]uint64
 	if erro := json.NewDecoder(response.Body).Decode(&resultado); erro != nil {
+		fmt.Println("❌ Erro ao decodificar resposta da nuvem:", erro)
 		return 0, erro
 	}
 
