@@ -58,11 +58,24 @@ func CriarUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
+	// Ajuste para capturar corretamente os dois valores retornados pela API da nuvem
 	var resultado struct {
-		Existe bool `json:"existe"`
+		EmailExiste bool `json:"emailExiste"`
+		NickExiste  bool `json:"nickExiste"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&resultado); err != nil || resultado.Existe {
-		respostas.Erro(w, http.StatusConflict, errors.New("Usuário já existe na nuvem"))
+	if err := json.NewDecoder(resp.Body).Decode(&resultado); err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, errors.New("Erro ao processar resposta da nuvem"))
+		return
+	}
+
+	// Agora verificamos separadamente email e nick
+	if resultado.EmailExiste {
+		respostas.Erro(w, http.StatusConflict, errors.New("O e-mail já está cadastrado na nuvem"))
+		return
+	}
+
+	if resultado.NickExiste {
+		respostas.Erro(w, http.StatusConflict, errors.New("O nick já está cadastrado na nuvem"))
 		return
 	}
 
@@ -384,6 +397,71 @@ func AtualizarSenha(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respostas.JSON(w, http.StatusNoContent, nil)
+}
+
+func PesquisarUsuariosPorNome_usuarios(w http.ResponseWriter, r *http.Request) {
+	nomeOuNick := strings.ToLower(r.URL.Query().Get("usuario"))
+
+	// Extrair o cdEmp do token
+	cdEmp1, erro := autenticacao.ExtrairUsuarioCDEMP(r)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnauthorized, erro)
+		return
+	}
+
+	db1, erro := banco.ConectarPorEmpresa(cdEmp1)
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db1.Close()
+
+	//fmt.Println(nomeOuNick)
+	// Extrair o nível do usuário
+	nivelUsuario, erro := autenticacao.ExtrairUsuarioNivel(r)
+	if erro != nil {
+		respostas.Erro(w, http.StatusUnauthorized, erro)
+		return
+	}
+
+	repositorioNiveis := repositorios.NovoRepositorioDeNiveis(db1)
+	nivelRequerido, erro := repositorioNiveis.BuscarOuCriarNivelPorCodigo("PesquisarUsuariosPorNome_usuarios")
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	if nivelUsuario < uint64(nivelRequerido) {
+		erro := errors.New("nível de acesso insuficiente")
+		respostas.Erro(w, http.StatusUnauthorized, erro)
+		return
+	}
+
+	// Conectar ao banco de dados principal
+	db, erro := banco.Conectar("DB_NOME")
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db.Close()
+	// Extrair o CDEMP do token
+	token := r.Header.Get("Authorization")
+	cdEmp, erro := autenticacao.ExtrairCdEmpDoTokenString(strings.TrimPrefix(token, "Bearer "))
+	if erro != nil {
+
+		respostas.Erro(w, http.StatusUnauthorized, fmt.Errorf("erro ao extrair CDEMP do token: %v", erro))
+		return
+	}
+
+	// Repositório e busca de usuários com filtro
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	usuarios, erro := repositorio.PesquisarPorNomeOuNick(nomeOuNick, cdEmp)
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	respostas.JSON(w, http.StatusOK, usuarios)
 }
 
 // BuscarNick busca usuário por nick

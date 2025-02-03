@@ -193,6 +193,40 @@ func (repositorio Usuarios) AtualizarSenha(usuarioID uint64, senha string) error
 	return nil
 }
 
+// PesquisarPorNomeOuNick busca usuários com base em parte do nome ou apelido
+func (repositorio Usuarios) PesquisarPorNomeOuNick(nomeOuNick string, cdEmp string) ([]modelos.Usuario, error) {
+	nomeOuNick = fmt.Sprintf("%%%s%%", nomeOuNick)
+
+	linhas, erro := repositorio.db.Query(
+		"SELECT ID, NOME, NICK, EMAIL, CRIADOEM, CDEMP, NIVEL FROM USUARIOS WHERE ( NOME LIKE ? OR NICK LIKE ?) and CDEMP = ? ",
+		nomeOuNick, nomeOuNick, cdEmp,
+	)
+
+	if erro != nil {
+		return nil, erro
+	}
+	defer linhas.Close()
+
+	var usuarios []modelos.Usuario
+	for linhas.Next() {
+		var usuario modelos.Usuario
+		if erro = linhas.Scan(
+			&usuario.ID,
+			&usuario.Nome,
+			&usuario.Nick,
+			&usuario.Email,
+			&usuario.CriadoEm,
+			&usuario.CDEMP,
+			&usuario.Nivel,
+		); erro != nil {
+			return nil, erro
+		}
+		usuarios = append(usuarios, usuario)
+	}
+
+	return usuarios, nil
+}
+
 //funções de SYNC
 
 // Função para buscar usuários não sincronizados (ID_HOSTWEB = 0)
