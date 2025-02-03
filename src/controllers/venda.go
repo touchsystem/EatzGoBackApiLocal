@@ -40,6 +40,7 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 			CPFCliente    string `json:"cpf_cliente"`
 			NomeCliente   string `json:"nome_cliente"`
 			IDCliente     int    `json:"id_cliente"`
+			Nick          string `json:"nick"`
 		} `json:"cabecalho"`
 		Itens []struct {
 			CODM string  `json:"codm"`
@@ -61,6 +62,7 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
 	// Conecta ao banco de dados da empresa
 	db, erro := banco.ConectarPorEmpresa(cdEmp)
 	if erro != nil {
@@ -68,7 +70,25 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer db.Close()
+	// Valida se o nick do usuário existe
+	fmt.Println(payload.Cabecalho.Nick,cdEmp)
+	repositorioUsuarios := repositorios.NovoRepositorioDeUsuarios(db)
+	usuarios, erro := repositorioUsuarios.BuscarNick(payload.Cabecalho.Nick, cdEmp)
+	fmt.Println(nil)
+	fmt.Printf("Valor de erro: %#v\n", erro)
 
+	if erro != nil {
+		respostas.Erro(w, http.StatusInternalServerError, errors.New("Erro ao buscar o nick do usuário"))
+		return
+	}
+	if len(usuarios) == 0 {
+		fmt.Println("O nick informado não é válido")
+		respostas.Erro(w, http.StatusBadRequest, errors.New("O nick informado não é válido"))
+		return
+	}
+	
+	// Valida se o nick do usuário existe
+	//fmt.Println("cjeguei aqu 22i")
 	// Valida se a mesa existe e verifica o status
 	repositorioMesas := repositorios.NovoRepositorioDeMesas(db)
 	mesas, erro := repositorioMesas.BuscarMesas("")
@@ -125,11 +145,11 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 	}
 	idUsuario := int(idUsuarioUint64)
 
-	nickUsuario, erro := autenticacao.ExtrairUsuarioNick(r)
-	if erro != nil {
-		respostas.Erro(w, http.StatusUnauthorized, erro)
-		return
-	}
+	//nickUsuario, erro := autenticacao.ExtrairUsuarioNick(r)
+	//if erro != nil {
+	//	respostas.Erro(w, http.StatusUnauthorized, erro)
+	//	return
+	//}
 
 	// Gera a chave para todas as vendas
 	chave := fmt.Sprintf("%d_%d_%s", idUsuario, payload.Cabecalho.Mesa, time.Now().Format("2006-01-02 15:04:05"))
@@ -195,7 +215,7 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 			OBS:             item.OBS,
 			DATA:            dataSistema,
 			ID_USER:         idUsuario,
-			NICK:            nickUsuario,
+			NICK:            payload.Cabecalho.Nick,
 			CHAVE:           chave,
 		}
 
@@ -217,7 +237,7 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 
 		vendas = append(vendas, venda)
 	}
-
+	nick := payload.Cabecalho.Nick
 	// // começar a imprimir TICKET
 	if imprimirVenda {
 
@@ -244,7 +264,7 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 					fichaTexto += "------------------------------------------\n"
 
 					// Conversão de venda.MESA para string usando strconv.Itoa
-					err := imprimirDetalhesDaVenda(&venda, fichaTexto, time.Now().Format("2006-01-02 15:04:05"), r, strconv.Itoa(venda.MESA))
+					err := imprimirDetalhesDaVenda(&venda, fichaTexto, time.Now().Format("2006-01-02 15:04:05"), r, strconv.Itoa(venda.MESA),nick)
 					if err != nil {
 						log.Printf("Erro ao imprimir ficha para venda %s: %v", venda.CODM, err)
 					}
@@ -308,7 +328,7 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 
 				for _, vendaExemplo := range itens {
 					// Conversão de vendaExemplo.MESA para string usando strconv.Itoa
-					err := imprimirDetalhesDaVenda(vendaExemplo, textoImpressao, dataSistema, r, strconv.Itoa(vendaExemplo.MESA))
+					err := imprimirDetalhesDaVenda(vendaExemplo, textoImpressao, dataSistema, r, strconv.Itoa(vendaExemplo.MESA), nick)
 					if err != nil {
 						log.Printf("Erro ao imprimir para impressora %s: %v", impressora, err)
 					}
@@ -351,7 +371,7 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 				textoImpressao += "------------------------------------------\n"
 
 				// Chamada da função de impressão com o número da mesa convertido para string
-				err := imprimirDetalhesDaVenda(&venda, textoImpressao, dataSistema, r, strconv.Itoa(venda.MESA))
+				err := imprimirDetalhesDaVenda(&venda, textoImpressao, dataSistema, r, strconv.Itoa(venda.MESA), nick)
 				if err != nil {
 					log.Printf("Erro ao imprimir para impressora %s: %v", venda.IMPRESSORA, err)
 				}
@@ -366,7 +386,8 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 }
 
 // Função para imprimir detalhes da venda
-func imprimirDetalhesDaVenda(venda *modelos.Venda, textoImpressao string, dataSistema string, r *http.Request, mesa string) error {
+// Função para imprimir detalhes da venda
+func imprimirDetalhesDaVenda(venda *modelos.Venda, textoImpressao string, dataSistema string, r *http.Request, mesa string, nick string) error {
 	if venda == nil || venda.IMPRESSORA == "" {
 		return fmt.Errorf("venda inválida ou impressora não informada")
 	}
@@ -399,7 +420,7 @@ func imprimirDetalhesDaVenda(venda *modelos.Venda, textoImpressao string, dataSi
 	texto += impressao.SetBold(true) + "VENDA - DETALHES\n" + impressao.SetBold(false)
 	texto += fmt.Sprintf("Ponto Produção: %s %s\n", venda.IMPRESSORA, strings.TrimSpace(impressora.END_IMP))
 	texto += fmt.Sprintf("Data/Hora: %s\n", dataSistema)
-	texto += fmt.Sprintf("Mesa: %s\n", mesa) // Inclui o número da mesa
+	texto += fmt.Sprintf("Mesa: %s | Nick: %s\n", mesa, nick) // Inclui o número da mesa e o nick
 	texto += "------------------------------------------\n"
 	texto += textoImpressao + "\n" // Adiciona os detalhes já formatados do texto de impressão
 	texto += "------------------------------------------\n"
@@ -418,7 +439,6 @@ func imprimirDetalhesDaVenda(venda *modelos.Venda, textoImpressao string, dataSi
 	//	log.Printf("Impressão enviada com sucesso para a impressora no endereço: %s", enderecoImpressora)
 	return nil
 }
-
 // BuscarVendaPorID
 func BuscarVendaPorID(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)

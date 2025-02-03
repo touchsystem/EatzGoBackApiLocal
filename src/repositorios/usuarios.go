@@ -381,7 +381,7 @@ func (repositorio Usuarios) DesmarcarAguardandoSyncUsuario(usuarioID uint64) err
 func (repositorio Usuarios) CriarUsuarioSoLocal(usuario modelos.Usuario) (uint64, error) {
 	// Prepara e executa o SQL de inserção
 	statement, erro := repositorio.db.Prepare(`
-		INSERT INTO USUARIOS (AGUARDANDO_SYNC, NOME, NICK, EMAIL, SENHA, CRIADOEM, CDEMP, NIVEL)
+		INSERT INTO USUARIOS (AGUARDANDO_SYNC, NOME, NICK, EMAIL, SENHA,  CDEMP, NIVEL)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`)
 	if erro != nil {
@@ -395,7 +395,7 @@ func (repositorio Usuarios) CriarUsuarioSoLocal(usuario modelos.Usuario) (uint64
 		usuario.Nick,
 		usuario.Email,
 		usuario.Senha,
-		usuario.CriadoEm,
+	
 		usuario.CDEMP,
 		usuario.Nivel,
 	)
@@ -417,10 +417,11 @@ func (repositorio Usuarios) CriarUsuarioSoLocal(usuario modelos.Usuario) (uint64
 // BuscarNick busca usuários pelo nick e código da empresa
 func (repositorio Usuarios) BuscarNick(nick string, cdEmp string) ([]modelos.Usuario, error) {
 	// Executa a consulta com filtro por nick e CDEMP
+	
 	linhas, erro := repositorio.db.Query(`
-		SELECT ID, NOME, NICK, EMAIL, CRIADOEM, CDEMP, NIVEL
+		SELECT ID, NOME, NICK, EMAIL,  CDEMP, NIVEL
 		FROM USUARIOS
-		WHERE CDEMP = ? AND TRIM(NICK) = ?
+		WHERE CDEMP = ? AND TRIM(NICK) = TRIM(?)
 	`, cdEmp, nick)
 	if erro != nil {
 		return nil, erro
@@ -438,7 +439,7 @@ func (repositorio Usuarios) BuscarNick(nick string, cdEmp string) ([]modelos.Usu
 			&usuario.Nome,
 			&usuario.Nick,
 			&usuario.Email,
-			&usuario.CriadoEm,
+		
 			&usuario.CDEMP,
 			&usuario.Nivel,
 		); erro != nil {
@@ -446,7 +447,9 @@ func (repositorio Usuarios) BuscarNick(nick string, cdEmp string) ([]modelos.Usu
 		}
 
 		usuarios = append(usuarios, usuario)
+	//	fmt.Println("Usuário encontrado no banco:", usuario)
 	}
 
 	return usuarios, nil
 }
+

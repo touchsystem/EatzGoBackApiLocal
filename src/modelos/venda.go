@@ -40,9 +40,6 @@ func (venda *Venda) Preparar() error {
 	if venda.CODM == "" {
 		return errors.New("O campo CODM é obrigatório")
 	}
-	//	if venda.PV <= 0 {
-	//		return errors.New("O valor PV deve ser maior que zero")
-	//	}
 
 	// Validação de STATUS_TP_VENDA
 	valoresPermitidos := map[string]bool{
