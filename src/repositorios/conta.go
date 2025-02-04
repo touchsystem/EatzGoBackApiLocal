@@ -20,10 +20,10 @@ func NovoRepositorioDeContas(db *sql.DB) *ContaRepository {
 func (repositorio ContaRepository) BuscarVendasPorMesa(mesa int) ([]modelos.ContaVenda, error) {
 	query := `
 		SELECT 
-			V.CODM, P.DESCRICAO, P.DES2, V.CELULAR, V.CPF_CLIENTE, V.NOME_CLIENTE, 
+			V.CODM, P.DES2, V.CELULAR, V.CPF_CLIENTE, V.NOME_CLIENTE, 
 			V.ID_CLIENTE, V.PV, V.PV_PROM, V.NICK, V.DATA
-		FROM VENDAS V
-		LEFT JOIN PRODUTOS P ON V.CODM = P.CODM
+		FROM VENDA V
+		LEFT JOIN PRODUTO P ON V.CODM = P.CODM
 		WHERE V.MESA = ? AND V.STATUS = 'A'`
 
 	rows, err := repositorio.db.Query(query, mesa)
@@ -36,7 +36,7 @@ func (repositorio ContaRepository) BuscarVendasPorMesa(mesa int) ([]modelos.Cont
 	for rows.Next() {
 		var venda modelos.ContaVenda
 		err = rows.Scan(
-			&venda.CODM, &venda.Descricao, &venda.DES2, &venda.Celular,
+			&venda.CODM, &venda.DES2, &venda.Celular,
 			&venda.CPFCliente, &venda.NomeCliente, &venda.IDCliente,
 			&venda.PV, &venda.PVProm, &venda.Nick, &venda.Data,
 		)
@@ -69,6 +69,6 @@ func (repositorio ContaRepository) BuscarMesaPorNumero(mesa int) (modelos.Mesa, 
 		return modelos.Mesa{}, err
 	}
 
-	fmt.Printf("Mesa encontrada: %+v\n", mesaInfo)
+	//	fmt.Printf("Mesa encontrada: %+v\n", mesaInfo)
 	return mesaInfo, nil
 }
