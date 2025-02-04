@@ -42,11 +42,25 @@ func BuscarContaPorMesa(w http.ResponseWriter, r *http.Request) {
 		respostas.Erro(w, http.StatusNotFound, errors.New("Mesa não encontrada"))
 		return
 	}
+
 	// Buscar vendas associadas à mesa e calcular total
 	vendas, totalConta, err := repositorio.BuscarVendasPorMesa(numMesa)
 	if err != nil {
 		respostas.Erro(w, http.StatusInternalServerError, err)
 		return
+	}
+
+	// Buscar parâmetro ID=2 (Taxa de Serviço)
+	parametro, err := repositorio.BuscarParametroPorID(2)
+	if err != nil {
+		respostas.Erro(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	// Cálculo da taxa de serviço
+	var taxaServico float64 = 0
+	if parametro.Status == "S" && parametro.Limite > 0 {
+		taxaServico = (totalConta * parametro.Limite) / 100
 	}
 
 	// Montar resposta com o total da conta incluído
@@ -58,7 +72,8 @@ func BuscarContaPorMesa(w http.ResponseWriter, r *http.Request) {
 		Celular:     mesa.Celular,
 		QtdPessoas:  mesa.QtdPessoas,
 		Vendas:      vendas,
-		TotalConta:  totalConta, // Adiciona o total da conta corretamente
+		TotalConta:  totalConta,  // Total sem taxa
+		TaxaServico: taxaServico, // Taxa de serviço calculada
 	}
 
 	respostas.JSON(w, http.StatusOK, conta)

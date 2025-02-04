@@ -74,3 +74,20 @@ func (repositorio ContaRepository) BuscarMesaPorNumero(mesa int) (modelos.Mesa, 
 
 	return mesaInfo, nil
 }
+
+// BuscarParametroPorID busca um parâmetro pelo ID no banco de dados
+func (repositorio ContaRepository) BuscarParametroPorID(parametroID int) (modelos.Parametro, error) {
+	query := `SELECT ID, NOME, STATUS, LIMITE FROM PARAMETROS WHERE id = ?`
+
+	var parametro modelos.Parametro
+	err := repositorio.db.QueryRow(query, parametroID).Scan(
+		&parametro.ID, &parametro.Nome, &parametro.Status, &parametro.Limite,
+	)
+
+	if err != nil {
+		fmt.Printf("Erro ao buscar parâmetro: %v\n", err)
+		return modelos.Parametro{}, err
+	}
+
+	return parametro, nil
+}

@@ -12,6 +12,7 @@ type Conta struct {
 	HoraAbertura   string       `json:"hora_abertura,omitempty"`
 	Vendas         []ContaVenda `json:"vendas,omitempty"` // Lista de vendas
 	TotalConta     float64      `json:"total_conta"`      // Novo campo para total
+	TaxaServico    float64      `json:"taxa_servico"`     // Novo campo para total
 }
 
 // ContaVenda representa os itens vendidos na conta
