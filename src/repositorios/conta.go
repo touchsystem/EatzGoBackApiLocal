@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-// ContaRepository representa um repositório para operações da conta
+// ContaRepository representa o repositório de contas
 type ContaRepository struct {
 	db *sql.DB
 }
@@ -17,45 +17,48 @@ func NovoRepositorioDeContas(db *sql.DB) *ContaRepository {
 }
 
 // BuscarVendasPorMesa busca as vendas ativas por número da mesa com informações adicionais
-func (repositorio ContaRepository) BuscarVendasPorMesa(mesa int) ([]modelos.ContaVenda, error) {
+func (repositorio ContaRepository) BuscarVendasPorMesa(mesa int) ([]modelos.ContaVenda, float64, error) {
 	query := `
 		SELECT 
 			V.CODM, P.DES2, V.CELULAR, V.CPF_CLIENTE, V.NOME_CLIENTE, 
-			V.ID_CLIENTE, V.PV, V.PV_PROM, V.NICK, V.DATA
+			V.ID_CLIENTE, V.PV, V.QTD, V.PV_PROM, V.NICK, V.DATA
 		FROM VENDA V
 		LEFT JOIN PRODUTO P ON V.CODM = P.CODM
 		WHERE V.MESA = ? AND V.STATUS = 'A'`
 
 	rows, err := repositorio.db.Query(query, mesa)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 	defer rows.Close()
 
 	var vendas []modelos.ContaVenda
+	var totalConta float64
+
 	for rows.Next() {
 		var venda modelos.ContaVenda
 		err = rows.Scan(
 			&venda.CODM, &venda.DES2, &venda.Celular,
 			&venda.CPFCliente, &venda.NomeCliente, &venda.IDCliente,
-			&venda.PV, &venda.PVProm, &venda.Nick, &venda.Data,
+			&venda.PV, &venda.QTD, &venda.PVProm, &venda.Nick, &venda.Data,
 		)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
+
+		// Cálculo do total: QTD * PV (Preço unitário)
+		totalConta += venda.QTD * venda.PV
+
 		vendas = append(vendas, venda)
 	}
 
-	return vendas, nil
+	return vendas, totalConta, nil
 }
 
 // BuscarMesaPorNumero busca os detalhes da mesa pelo número
 func (repositorio ContaRepository) BuscarMesaPorNumero(mesa int) (modelos.Mesa, error) {
-	//	fmt.Printf("Buscando mesa: %d\n", mesa)
 	query := `SELECT ID, MESA_CARTAO, STATUS, ID_USER, ID_CLI, NICK, ABERTURA, QTD_PESSOAS, TURISTA, CELULAR, APELIDO 
           FROM MESA WHERE MESA_CARTAO = ?`
-
-	//	fmt.Printf("Executando query: %s com parâmetro: %d\n", query, mesa)
 
 	var mesaInfo modelos.Mesa
 	err := repositorio.db.QueryRow(query, mesa).Scan(
@@ -69,6 +72,5 @@ func (repositorio ContaRepository) BuscarMesaPorNumero(mesa int) (modelos.Mesa, 
 		return modelos.Mesa{}, err
 	}
 
-	//	fmt.Printf("Mesa encontrada: %+v\n", mesaInfo)
 	return mesaInfo, nil
 }

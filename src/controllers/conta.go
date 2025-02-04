@@ -42,15 +42,14 @@ func BuscarContaPorMesa(w http.ResponseWriter, r *http.Request) {
 		respostas.Erro(w, http.StatusNotFound, errors.New("Mesa não encontrada"))
 		return
 	}
-
-	// Buscar vendas associadas à mesa
-	vendas, err := repositorio.BuscarVendasPorMesa(numMesa)
+	// Buscar vendas associadas à mesa e calcular total
+	vendas, totalConta, err := repositorio.BuscarVendasPorMesa(numMesa)
 	if err != nil {
 		respostas.Erro(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	// Montar resposta
+	// Montar resposta com o total da conta incluído
 	conta := modelos.Conta{
 		MesaNumero:  mesa.MesaCartao,
 		NickUsuario: nickUsuario,
@@ -59,6 +58,7 @@ func BuscarContaPorMesa(w http.ResponseWriter, r *http.Request) {
 		Celular:     mesa.Celular,
 		QtdPessoas:  mesa.QtdPessoas,
 		Vendas:      vendas,
+		TotalConta:  totalConta, // Adiciona o total da conta corretamente
 	}
 
 	respostas.JSON(w, http.StatusOK, conta)
