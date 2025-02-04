@@ -22,7 +22,6 @@ import (
 )
 
 // Função para criar vendas
-// Função para criar vendas
 func CriarVendas(w http.ResponseWriter, r *http.Request) {
 	// Lê o corpo da requisição
 	corpoRequest, erro := ioutil.ReadAll(r.Body)
@@ -62,7 +61,6 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	// Conecta ao banco de dados da empresa
 	db, erro := banco.ConectarPorEmpresa(cdEmp)
 	if erro != nil {
@@ -71,7 +69,7 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 	// Valida se o nick do usuário existe
-	fmt.Println(payload.Cabecalho.Nick,cdEmp)
+	fmt.Println(payload.Cabecalho.Nick, cdEmp)
 	repositorioUsuarios := repositorios.NovoRepositorioDeUsuarios(db)
 	usuarios, erro := repositorioUsuarios.BuscarNick(payload.Cabecalho.Nick, cdEmp)
 	fmt.Println(nil)
@@ -86,7 +84,7 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 		respostas.Erro(w, http.StatusBadRequest, errors.New("O nick informado não é válido"))
 		return
 	}
-	
+
 	// Valida se o nick do usuário existe
 	//fmt.Println("cjeguei aqu 22i")
 	// Valida se a mesa existe e verifica o status
@@ -264,7 +262,7 @@ func CriarVendas(w http.ResponseWriter, r *http.Request) {
 					fichaTexto += "------------------------------------------\n"
 
 					// Conversão de venda.MESA para string usando strconv.Itoa
-					err := imprimirDetalhesDaVenda(&venda, fichaTexto, time.Now().Format("2006-01-02 15:04:05"), r, strconv.Itoa(venda.MESA),nick)
+					err := imprimirDetalhesDaVenda(&venda, fichaTexto, time.Now().Format("2006-01-02 15:04:05"), r, strconv.Itoa(venda.MESA), nick)
 					if err != nil {
 						log.Printf("Erro ao imprimir ficha para venda %s: %v", venda.CODM, err)
 					}
@@ -439,6 +437,7 @@ func imprimirDetalhesDaVenda(venda *modelos.Venda, textoImpressao string, dataSi
 	//	log.Printf("Impressão enviada com sucesso para a impressora no endereço: %s", enderecoImpressora)
 	return nil
 }
+
 // BuscarVendaPorID
 func BuscarVendaPorID(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
